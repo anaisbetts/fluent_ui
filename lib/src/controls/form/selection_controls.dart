@@ -5,6 +5,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 
 // The minimum padding from all edges of the selection toolbar to all edges of
 // the screen.
@@ -117,18 +118,15 @@ class _FluentTextSelectionControls extends TextSelectionControls {
     Offset selectionMidpoint,
     List<TextSelectionPoint> endpoints,
     TextSelectionDelegate delegate,
-    ClipboardStatusNotifier? clipboardStatus,
+    ValueListenable<ClipboardStatus>? clipboardStatus,
     Offset? lastSecondaryTapDownPosition,
   ) {
     return _FluentTextSelectionControlsToolbar(
       clipboardStatus: clipboardStatus,
       endpoints: endpoints,
       globalEditableRegion: globalEditableRegion,
-      handleCut:
-          canCut(delegate) ? () => handleCut(delegate, clipboardStatus) : null,
-      handleCopy: canCopy(delegate)
-          ? () => handleCopy(delegate, clipboardStatus)
-          : null,
+      handleCut: canCut(delegate) ? () => handleCut(delegate) : null,
+      handleCopy: canCopy(delegate) ? () => handleCopy(delegate) : null,
       handlePaste: canPaste(delegate) ? () => handlePaste(delegate) : null,
       handleSelectAll:
           canSelectAll(delegate) ? () => handleSelectAll(delegate) : null,
@@ -193,7 +191,7 @@ class _FluentTextSelectionControlsToolbar extends StatefulWidget {
     required this.lastSecondaryTapDownPosition,
   });
 
-  final ClipboardStatusNotifier? clipboardStatus;
+  final ValueListenable<ClipboardStatus>? clipboardStatus;
   final List<TextSelectionPoint> endpoints;
   final Rect globalEditableRegion;
   final VoidCallback? handleCopy;
@@ -211,7 +209,7 @@ class _FluentTextSelectionControlsToolbar extends StatefulWidget {
 
 class _FluentTextSelectionControlsToolbarState
     extends State<_FluentTextSelectionControlsToolbar> {
-  ClipboardStatusNotifier? _clipboardStatus;
+  ValueListenable<ClipboardStatus>? _clipboardStatus;
 
   void _onChangedClipboardStatus() {
     setState(() {
@@ -225,7 +223,7 @@ class _FluentTextSelectionControlsToolbarState
     if (widget.handlePaste != null) {
       _clipboardStatus = widget.clipboardStatus;
       _clipboardStatus!.addListener(_onChangedClipboardStatus);
-      _clipboardStatus!.update();
+      //XXX:_clipboardStatus!.update();
     }
   }
 
@@ -235,12 +233,12 @@ class _FluentTextSelectionControlsToolbarState
     if (oldWidget.clipboardStatus != widget.clipboardStatus) {
       if (_clipboardStatus != null) {
         _clipboardStatus!.removeListener(_onChangedClipboardStatus);
-        _clipboardStatus!.dispose();
+        //XXX:_clipboardStatus!.dispose();
       }
       _clipboardStatus = widget.clipboardStatus;
       _clipboardStatus!.addListener(_onChangedClipboardStatus);
       if (widget.handlePaste != null) {
-        _clipboardStatus!.update();
+        //XXX: _clipboardStatus!.update();
       }
     }
   }
@@ -250,7 +248,7 @@ class _FluentTextSelectionControlsToolbarState
     super.dispose();
     // When used in an Overlay, this can be disposed after its creator has
     // already disposed _clipboardStatus.
-    if (_clipboardStatus != null && !_clipboardStatus!.disposed) {
+    if (_clipboardStatus != null) {
       _clipboardStatus!.removeListener(_onChangedClipboardStatus);
     }
   }
@@ -423,14 +421,14 @@ class _FluentTextSelectionToolbar extends StatelessWidget {
 /// A button for the Fluent desktop text selection toolbar.
 class _FluentTextSelectionToolbarButton extends StatelessWidget {
   const _FluentTextSelectionToolbarButton({
-    required this.onPressed,
+    this.onPressed,
     required this.text,
     required this.icon,
     required this.shortcut,
     required this.tooltip,
   });
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final String text;
   final IconData? icon;
   final String shortcut;
